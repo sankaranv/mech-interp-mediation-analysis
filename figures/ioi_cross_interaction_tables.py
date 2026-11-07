@@ -7,8 +7,9 @@ prompt. Every cross-interaction has the sign of Theorem 4.1,
 ``NIE(A + B) = NIE(A) + NIE(B) + xINT(A, B)``; the effect of ``B`` once ``A`` is knocked
 out is ``NIE(B | A) = Y(A) - Y(A + B) = NIE(B) + xINT(A, B)``.
 
-Writes ``paper/ioi_bnmh_table.tex`` (tab:ioi-bnmh), ``paper/sinh_xint_table.tex``
-(tab:sinh-xint) and ``paper/ioi_cross_interaction_tables_numbers.json``.
+Writes ``paper/ioi_backup_name_mover_table.tex`` (tab:ioi-bnmh),
+``paper/ioi_s_inhibition_cross_interaction_table.tex`` (tab:sinh-xint) and
+``paper/ioi_cross_interaction_tables_numbers.json``.
 
 Run ``python figures/ioi_cross_interaction_tables.py``.
 """
@@ -254,11 +255,13 @@ def main() -> None:
     effects = load_pair_ranges(head_effects_directory(root, MODEL, "ioi_pabc"))
     directory = arguments.paper_directory
     write_table(
-        "ioi_bnmh_table",
+        "ioi_backup_name_mover_table",
         backup_table(arrays, effects["nie"], effects["pie"]),
         directory,
     )
-    write_table("sinh_xint_table", inhibition_table(arrays), directory)
+    write_table(
+        "ioi_s_inhibition_cross_interaction_table", inhibition_table(arrays), directory
+    )
     write_numbers(
         "ioi_cross_interaction_tables",
         {

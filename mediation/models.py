@@ -48,7 +48,9 @@ ARCHITECTURES = {
     "llama": Architecture("model.layers", "self_attn.o_proj", "mlp", "lm_head"),
 }
 
-# float32 everywhere except Llama-3.1-8B, which does not fit one GPU in float32.
+# Every model runs in float32 except Llama-3.1-8B, which runs in bfloat16 (so its effects
+# are only as precise as bfloat16 logits: a few tenths, see the README). The estimands of
+# the paper depend on this choice, so it is part of the model's specification.
 MODELS = {
     "gpt2-small": ModelSpec(
         "openai-community/gpt2",

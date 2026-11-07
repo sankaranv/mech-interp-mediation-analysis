@@ -15,6 +15,8 @@ from mediation.models import LoadedModel
 
 
 class AttentionHead(NamedTuple):
+    """One attention head: its slice of the input to the attention output projection."""
+
     layer: int
     head: int
 
@@ -25,6 +27,8 @@ class AttentionHead(NamedTuple):
 
 
 class MlpLayer(NamedTuple):
+    """The output of the MLP of one block."""
+
     layer: int
 
 
