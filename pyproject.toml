@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-figures = ["matplotlib==3.10.8"]
+figures = ["matplotlib==3.10.8", "seaborn==0.13.2"]
 development = ["pytest==9.0.2", "ruff==0.15.5"]
 
 [tool.setuptools.packages.find]
