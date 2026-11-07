@@ -59,21 +59,31 @@ length).
 ### On SLURM
 
 ```bash
-slurm/run_all.sh                  # submit every experiment, about 900 jobs of up to 45 minutes
+slurm/run_all.sh                       # every experiment, then every figure and table
 MODELS="gpt2-small" slurm/run_all.sh   # per-head effects of the named models only
-figures/make_all.sh               # after all jobs have finished: every figure and table
 ```
 
 `slurm/run_all.sh` splits each experiment into jobs over ranges of prompt pairs, sized
-from the compute accounting of the paper's runs to take about 30 minutes each, and
-submits `slurm/<experiment>.sh` with the range in `PAIR_START` and `PAIR_STOP` (and
-`MODEL` and `TASK` for `head_effects.sh`). The templates use the account and partitions
-of our cluster, `gpu-preempt` with `--constraint=sm_70` (float32 needs compute capability
-7.0), and `gpu-preempt-highvram` with 40 GB for Pythia-6.9B and Llama-3.1-8B; edit the
-`#SBATCH` lines for another cluster. Jobs are requeued after preemption and end with a
-check that their output exists and is finite. The Tracr job is submitted only if
-`.venv-tracr` exists. The per-head effects dominate the cost: our runs took over 300
-GPU-hours, nearly all of it GPT-2 XL, Pythia-6.9B and Llama-3.1-8B.
+from the compute accounting of the paper's runs to take about 30 minutes each (898
+jobs, and one more for Tracr), and submits `slurm/<experiment>.sh` with the
+range in `PAIR_START` and `PAIR_STOP` (and `MODEL` and `TASK` for `head_effects.sh`).
+`MODELS` restricts only the per-head effects; the experiments on GPT-2 small are always
+submitted. A last job, `slurm/figures.sh`, runs `figures/make_all.sh` once every job
+has succeeded. If a job fails the figure job is cancelled: run `slurm/run_all.sh` again
+when no job of the earlier submission is left in the queue, and it submits only the
+ranges that have no file in `outputs/` yet.
+
+The templates use the account and partitions of our cluster, `gpu-preempt` with
+`--constraint=sm_70` (float32 needs compute capability 7.0), and
+`gpu-preempt-highvram` with 40 GB for Pythia-6.9B and Llama-3.1-8B; edit the `#SBATCH`
+lines for another cluster. Jobs are requeued after preemption and end with
+`slurm/check_pair_range.py`, which fails if the output is missing or not finite. The
+Tracr job is submitted only if `.venv-tracr` and `external/InterpBench` exist
+(`environment/tracr.md`). The per-head effects dominate the cost: at the per-pair times
+in `slurm/run_all.sh` the submission takes about 440 GPU-hours, 380 of them for GPT-2
+XL, Pythia-6.9B and Llama-3.1-8B. Jobs read the models from the Hugging Face cache
+(`HF_HOME`, inherited from the submitting shell), so let it hold the models, or one
+job per model, before the hundreds of jobs start.
 
 ### Locally, for GPT-2 small
 

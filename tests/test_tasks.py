@@ -1,6 +1,11 @@
+import pandas as pd
 import pytest
 import torch
 
+from mediation.models import load_tokenizer
+from mediation.tasks import load_prompt_pairs
+from mediation.tasks.gender_bias import DATA_DIRECTORY as GENDER_BIAS_DIRECTORY
+from mediation.tasks.gender_bias import build_gender_bias_dataframe
 from mediation.tasks.greater_than import greater_than_metric, year_token_ids
 from mediation.tasks.ioi import _swap_names, ioi_metric, load_ioi_pairs
 from mediation.tasks.sva import load_sva_pairs
@@ -52,3 +57,37 @@ def test_greater_than_metric_splits_the_years_at_the_start_year(tokenizer):
     logits[0, -1, year_ids[60:]] = 1.0
     # Start year 49: endings 50 to 99 average 40 / 50, endings 00 to 49 average 0.
     assert greater_than_metric(logits, 49, year_ids).item() == pytest.approx(0.8)
+
+
+def pinned_tokenizer(model_name):
+    try:
+        return load_tokenizer(model_name)
+    except OSError:
+        pytest.skip(f"Tokenizer of {model_name} is not available")
+
+
+@pytest.mark.parametrize(
+    "model_name, family", [("qwen2.5-0.5b", "qwen25"), ("llama-3.1-8b", "llama31")]
+)
+def test_shipped_gender_bias_files_are_the_builder_output(model_name, family):
+    built = build_gender_bias_dataframe(pinned_tokenizer(model_name))
+    assert built.equals(pd.read_csv(GENDER_BIAS_DIRECTORY / f"{family}.csv"))
+
+
+@pytest.mark.parametrize(
+    "model_name, task, count",
+    [
+        ("gpt2-small", "ioi_pabc", 1000),
+        ("gpt2-small", "gender_bias", 986),
+        ("gpt2-small", "greater_than", 1000),
+        ("pythia-70m", "ioi_pabc", 691),
+        ("pythia-70m", "ioi_symmetric", 1000),
+        ("pythia-70m", "gender_bias", 782),
+        ("pythia-70m", "sva", 1000),
+    ],
+)
+def test_pair_counts_of_the_paper(model_name, task, count):
+    pinned_tokenizer(model_name)
+    pairs = load_prompt_pairs(task, model_name)
+    assert len(pairs) == count
+    assert all(len(p.clean_tokens) == len(p.counterfactual_tokens) for p in pairs)

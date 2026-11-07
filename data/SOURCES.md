@@ -1,7 +1,7 @@
 # Data sources
 
-Every file here is read by the library or an experiment script; nothing else is shipped.
-Files are arranged by task.
+Every file here is read by the library, an experiment script or a test (`wang_circuit.json`
+is checked against `mediation.circuits`); nothing else is shipped. Files are arranged by task.
 
 ## Indirect Object Identification (`ioi/`)
 
