@@ -153,14 +153,6 @@ class LoadedModel:
         proxy = self._layer(layer, self.architecture.attention_output_projection).input
         return proxy[0] if self._input_is_tuple else proxy
 
-    def set_attention_output_input(self, layer: int, value) -> None:
-        """Replace the input of the attention output projection in this forward pass."""
-        module = self._layer(layer, self.architecture.attention_output_projection)
-        if self._input_is_tuple:
-            module.input[0] = value
-        else:
-            module.input = value
-
     def mlp_output(self, layer: int):
         """Proxy for the MLP output of a block: shape (batch, position, hidden_size)."""
         return self._layer(layer, self.architecture.mlp).output
