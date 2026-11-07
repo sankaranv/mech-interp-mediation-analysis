@@ -1,0 +1,31 @@
+# Packages of the Tracr environment (see tracr.md). Versions are those of the environment
+# that produced the published counts. pygraphviz is installed from conda-forge, not here.
+numpy==1.26.0
+scipy==1.14.0
+pandas==2.1.4
+torch==2.11.0
+transformer-lens==1.19.0
+transformers==4.39.3
+tokenizers==0.15.2
+datasets==2.18.0
+huggingface-hub==0.24.5
+accelerate==0.31.0
+einops==0.7.0
+jaxtyping==0.2.31
+jax==0.4.28
+jaxlib==0.4.28
+dm-haiku==0.0.11
+chex==0.1.86
+networkx==3.6.1
+matplotlib==3.8.2
+plotly==5.21.0
+kaleido==0.2.1
+wandb==0.16.6
+torchtyping==0.1.4
+cmapy==0.6.6
+cloudpickle==3.1.2
+typer==0.9.4
+tqdm==4.66.4
+tracr @ git+https://github.com/FlyingPumba/tracr.git@98f4910e3966805c83d80eb087c7a4e3328171c6
+iit @ git+https://github.com/cybershiptrooper/iit.git@947e2d24cec1860f5cdff7f85bf30d99eab08ba6
+acdc @ git+https://github.com/FlyingPumba/Automatic-Circuit-Discovery.git@78560d76a2b70010f0d55be27828b190adbb5b81

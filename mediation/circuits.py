@@ -100,3 +100,6 @@ def ioi_circuit_heads() -> list[AttentionHead]:
 
 GREATER_THAN_EARLY_MLPS = [MlpLayer(layer) for layer in range(4)]
 GREATER_THAN_LATE_MLPS = [MlpLayer(layer) for layer in range(8, 12)]
+
+# Order of the mediators in the Greater-Than cross-interaction arrays.
+GREATER_THAN_MLPS = GREATER_THAN_EARLY_MLPS + GREATER_THAN_LATE_MLPS
