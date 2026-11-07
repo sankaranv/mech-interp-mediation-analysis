@@ -160,8 +160,10 @@ def quoted_numbers(agreement: np.ndarray) -> dict:
     tasks = [task for task, _ in TASK_LABELS]
     models = [model for model, _, _ in MODEL_STYLES]
 
-    def lowest(task: str) -> dict:
+    def lowest(task: str) -> dict | None:
         row = agreement[tasks.index(task)]
+        if np.isnan(row).all():
+            return None
         column = int(np.nanargmin(row))
         return {"model": models[column], "rank_agreement": float(row[column])}
 
