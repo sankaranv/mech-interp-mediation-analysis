@@ -78,13 +78,13 @@ for model in $MODELS; do
 done
 
 # The experiments below all run on GPT-2 small.
-# Figure 2 (about 22 minutes for 1000 pairs).
-submit_ranges slurm/interpolation.sh 1000 1000
-# Section 4 (about 6 minutes for 1000 pairs).
+# Figure 2 (about 3 seconds per pair).
+submit_ranges slurm/interpolation.sh 1000 500
+# Section 4 (under a second per pair).
 submit_ranges slurm/circuit_knockout.sh 1000 1000
-# Section 5 and Appendix B cross-interactions (about 2 GPU-hours for 1000 pairs).
-submit_ranges slurm/ioi_cross_interactions.sh 1000 250
-# Appendix C (about 30 minutes for 1000 pairs).
+# Section 5 and Appendix B cross-interactions (about 3 seconds per pair).
+submit_ranges slurm/ioi_cross_interactions.sh 1000 500
+# Appendix C (about 2 seconds per pair).
 submit_ranges slurm/greater_than_cross_interactions.sh 1000 500
 
 # Section 3 Tracr counts: a CPU job in its own environment (environment/tracr.md).
