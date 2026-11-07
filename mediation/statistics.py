@@ -33,6 +33,13 @@ def latex_mean_with_interval(values: np.ndarray) -> str:
     return f"${interval.mean:+.3f} \\pm {interval.half_width:.3f}$"
 
 
+def interval_summary(values: np.ndarray) -> dict[str, float]:
+    """Mean over prompt pairs of 1-D ``values`` and the half-width of its 95% interval, as
+    the floats stored in the files of quoted numbers."""
+    interval = mean_with_confidence_interval(values)
+    return {"mean": float(interval.mean), "half_width": float(interval.half_width)}
+
+
 def standard_error(values: np.ndarray, axis: int = 0) -> np.ndarray:
     """Standard error of the mean, ``SD / sqrt(N)`` with the population standard deviation
     (``ddof=0``), as the shaded bands of Figure 2 use."""

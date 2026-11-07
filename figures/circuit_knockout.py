@@ -23,13 +23,7 @@ from mediation.results import (
     load_pair_ranges,
     write_numbers,
 )
-from mediation.statistics import mean_with_confidence_interval
-
-
-def summarize(values: np.ndarray) -> dict[str, float]:
-    """Mean over prompt pairs and the half-width of its 95% confidence interval."""
-    interval = mean_with_confidence_interval(values)
-    return {"mean": float(interval.mean), "half_width": float(interval.half_width)}
+from mediation.statistics import interval_summary
 
 
 def knockout_numbers(arrays: dict[str, np.ndarray]) -> dict:
@@ -50,11 +44,11 @@ def knockout_numbers(arrays: dict[str, np.ndarray]) -> dict:
     raise_given_circuit_knocked_out = effect_of_circuit - effect_of_all
     return {
         "pairs": len(clean),
-        "effect_of_all_heads": summarize(effect_of_all),
-        "effect_of_circuit": summarize(effect_of_circuit),
-        "effect_of_complement": summarize(effect_of_complement),
-        "cross_interaction_circuit_complement": summarize(cross),
-        "raise_from_complement_given_circuit_knocked_out": summarize(
+        "effect_of_all_heads": interval_summary(effect_of_all),
+        "effect_of_circuit": interval_summary(effect_of_circuit),
+        "effect_of_complement": interval_summary(effect_of_complement),
+        "cross_interaction_circuit_complement": interval_summary(cross),
+        "raise_from_complement_given_circuit_knocked_out": interval_summary(
             raise_given_circuit_knocked_out
         ),
         "pairs_where_all_heads_hurt_less_than_circuit": int(

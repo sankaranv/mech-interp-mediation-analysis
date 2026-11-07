@@ -21,10 +21,7 @@ from mediation.results import (
     write_numbers,
     write_table,
 )
-from mediation.statistics import (
-    latex_mean_with_interval,
-    mean_with_confidence_interval,
-)
+from mediation.statistics import interval_summary, latex_mean_with_interval
 
 ABLATIONS = ("mean", "resample")
 
@@ -101,13 +98,9 @@ def quoted_numbers(runs: dict) -> dict:
     for ablation, arrays in runs.items():
         cross_interactions = {}
         for first, second in early_mlp_pairs():
-            summary = mean_with_confidence_interval(
+            cross_interactions[f"MLP{first} x MLP{second}"] = interval_summary(
                 pair_cross_interaction(arrays, first, second)
             )
-            cross_interactions[f"MLP{first} x MLP{second}"] = {
-                "mean": float(summary.mean),
-                "half_width": float(summary.half_width),
-            }
         drops = ablation_drops(arrays, 1, 2)
         joint_excess = drops["both"] - drops["MLP1"] - drops["MLP2"]
         sum_of_single_drops = drops["MLP1"].mean() + drops["MLP2"].mean()

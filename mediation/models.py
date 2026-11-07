@@ -17,15 +17,18 @@ from transformers import AutoTokenizer
 
 @dataclass(frozen=True)
 class ModelSpec:
-    """A model of the paper, pinned to one revision of its Hugging Face repository."""
+    """A model of the paper, pinned to one revision of its Hugging Face repository.
+
+    :ivar architecture: key of :data:`ARCHITECTURES`.
+    :ivar tokenizer_family: selects the prompt files of the Gender Bias and Greater-Than
+        tasks.
+    """
 
     hugging_face_id: str
     revision: str
     dtype: torch.dtype
-    architecture: str  # key of ARCHITECTURES
-    tokenizer_family: (
-        str  # selects the prompt files of the Gender Bias and Greater-Than tasks
-    )
+    architecture: str
+    tokenizer_family: str
 
 
 @dataclass(frozen=True)
