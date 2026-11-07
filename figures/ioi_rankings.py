@@ -12,7 +12,6 @@ Section 5 quotes, including the Induction Head ranks under the symmetric counter
 """
 
 import argparse
-from itertools import product
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -21,6 +20,7 @@ import seaborn as sns
 
 from mediation.circuits import (
     DUPLICATE_TOKEN,
+    GPT2_SMALL_HEADS,
     INDUCTION,
     IOI_ROLE_COLORS,
     OTHER,
@@ -41,7 +41,6 @@ from mediation.results import (
 from mediation.statistics import signed_ranks
 
 MODEL = "gpt2-small"
-HEADS = [AttentionHead(layer, head) for layer, head in product(range(12), range(12))]
 
 # The four Backup Name Mover Heads that Wang et al. (Appendix) describe as behaving like
 # Name Mover Heads.
@@ -67,7 +66,7 @@ def draw_ranking(
     ranks = signed_ranks(mean_effect)
     # Three tiers: heads outside the circuit small and dim, circuit heads opaque, outlined
     # heads on top with a black edge.
-    for head in sorted(HEADS, key=lambda head: ranks[head]):
+    for head in sorted(GPT2_SMALL_HEADS, key=lambda head: ranks[head]):
         role = ioi_role(head)
         if role == OTHER:
             style = {"s": 18, "alpha": 0.25, "linewidths": 0, "zorder": 1}
@@ -108,7 +107,7 @@ def plot(nie: np.ndarray, pie: np.ndarray):
     draw_ranking(
         pie_axes,
         pie.mean(axis=0),
-        {head for head in HEADS if ioi_role(head) in CONTEXT_SPECIFIC_ROLES},
+        {head for head in GPT2_SMALL_HEADS if ioi_role(head) in CONTEXT_SPECIFIC_ROLES},
         "Rank by PIE (descending)",
         "PIE (logit-diff)",
     )
@@ -157,7 +156,7 @@ def quoted_numbers(nie: np.ndarray, pie: np.ndarray, symmetric_nie: np.ndarray) 
                 int(nie_ranks[head]) <= CIRCUIT_SIZE // 2 for head in context_specific
             ),
             "inside_pie_circuit_boundary": [
-                f"L{head.layer}H{head.head}"
+                head.name
                 for head in context_specific
                 if int(pie_ranks[head]) <= CIRCUIT_SIZE
             ],
@@ -168,7 +167,7 @@ def quoted_numbers(nie: np.ndarray, pie: np.ndarray, symmetric_nie: np.ndarray) 
             "mean_pie": float(pie.mean(axis=0)[induction_start]),
         },
         "symmetric_counterfactual_nie_rank": {
-            f"L{head.layer}H{head.head}": int(symmetric_ranks[head])
+            head.name: int(symmetric_ranks[head])
             for head in [*induction, duplicate_token_uncertain]
         },
     }

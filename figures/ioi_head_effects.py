@@ -10,7 +10,6 @@ and ``paper/ioi_head_effects_numbers.json`` (the values Section 5 quotes).
 """
 
 import argparse
-from itertools import product
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -20,6 +19,7 @@ import seaborn as sns
 from mediation.circuits import (
     BACKUP_NAME_MOVER,
     DUPLICATE_TOKEN,
+    GPT2_SMALL_HEADS,
     INDUCTION,
     IOI_ROLE_ABBREVIATIONS,
     IOI_ROLE_COLORS,
@@ -43,7 +43,6 @@ from mediation.results import (
 )
 
 MODEL = "gpt2-small"
-HEADS = [AttentionHead(layer, head) for layer, head in product(range(12), range(12))]
 
 # Order in which the scatter draws the groups; Duplicate Token is last so that it is
 # visible above Induction.
@@ -81,7 +80,7 @@ def draw_scatter(axes: plt.Axes, mean_pie: np.ndarray, mean_nie: np.ndarray) -> 
     axes.axvline(0, color="gray", lw=0.5, ls="--", alpha=0.4, zorder=1)
 
     def heads_with_role(role: str) -> list[AttentionHead]:
-        return [head for head in HEADS if ioi_role(head) == role]
+        return [head for head in GPT2_SMALL_HEADS if ioi_role(head) == role]
 
     # Heads outside the circuit are small and dim and drawn first.
     outside = heads_with_role(OTHER)
@@ -106,7 +105,7 @@ def draw_scatter(axes: plt.Axes, mean_pie: np.ndarray, mean_nie: np.ndarray) -> 
             zorder=3,
         )
     for head, ((dx, dy), alignment) in LABELLED_HEADS.items():
-        label = f"L{head.layer}H{head.head}\n({IOI_ROLE_ABBREVIATIONS[ioi_role(head)]})"
+        label = f"{head.name}\n({IOI_ROLE_ABBREVIATIONS[ioi_role(head)]})"
         axes.text(
             mean_pie[head] + dx,
             mean_nie[head] + dy,
@@ -130,7 +129,11 @@ def draw_strips(axes: plt.Axes, mean_interaction: np.ndarray) -> None:
     generator = np.random.default_rng(JITTER_SEED)
     for position, role in enumerate(IOI_ROLE_ORDER):
         values = np.array(
-            [mean_interaction[head] for head in HEADS if ioi_role(head) == role]
+            [
+                mean_interaction[head]
+                for head in GPT2_SMALL_HEADS
+                if ioi_role(head) == role
+            ]
         )
         horizontal = position + generator.uniform(-JITTER, JITTER, size=len(values))
         axes.scatter(
@@ -186,8 +189,10 @@ def quoted_numbers(nie: np.ndarray, pie: np.ndarray) -> dict:
     mean_nie, mean_pie = nie.mean(axis=0), pie.mean(axis=0)
     mean_interaction = (nie - pie).mean(axis=0)
     name_mover = AttentionHead(9, 9)
-    s_inhibition = [head for head in HEADS if ioi_role(head) == S_INHIBITION]
-    negative = [head for head in HEADS if ioi_role(head) == NEGATIVE_NAME_MOVER]
+    s_inhibition = [head for head in GPT2_SMALL_HEADS if ioi_role(head) == S_INHIBITION]
+    negative = [
+        head for head in GPT2_SMALL_HEADS if ioi_role(head) == NEGATIVE_NAME_MOVER
+    ]
     s_inhibition_pie = [float(mean_pie[head]) for head in s_inhibition]
     return {
         "L9H9": {
@@ -197,7 +202,7 @@ def quoted_numbers(nie: np.ndarray, pie: np.ndarray) -> dict:
         },
         "s_inhibition_pie_range": [min(s_inhibition_pie), max(s_inhibition_pie)],
         "negative_name_mover_pie": {
-            f"L{head.layer}H{head.head}": float(mean_pie[head]) for head in negative
+            head.name: float(mean_pie[head]) for head in negative
         },
     }
 

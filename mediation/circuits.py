@@ -93,6 +93,12 @@ def ioi_role(head: AttentionHead) -> str:
     return IOI_HEAD_ROLES.get(head, OTHER)
 
 
+def table_head_name(head: AttentionHead) -> str:
+    """LaTeX name of a head in the paper's tables: ``L9H9``, with a dagger on the heads
+    whose role Wang et al. mark as less certain."""
+    return head.name + (r"$^\dagger$" if head in IOI_UNCERTAIN_HEADS else "")
+
+
 def ioi_circuit_heads() -> list[AttentionHead]:
     """The 26 heads of the IOI circuit, sorted by layer and head."""
     return sorted(IOI_HEAD_ROLES)
@@ -117,12 +123,13 @@ S_INHIBITION_PARTNER_HEADS = ioi_heads_with_roles(
     DUPLICATE_TOKEN, INDUCTION, PREVIOUS_TOKEN, NEGATIVE_NAME_MOVER
 )
 BACKUP_NAME_MOVER_HEADS = ioi_heads_with_roles(BACKUP_NAME_MOVER)
-# The other 141 heads of GPT-2 small (12 layers of 12 heads), in layer and head order.
+# Every head of GPT-2 small (12 layers of 12 heads), in layer and head order, and the 141
+# heads that are not Name Mover Heads.
+GPT2_SMALL_HEADS = [
+    AttentionHead(layer, head) for layer in range(12) for head in range(12)
+]
 NON_NAME_MOVER_HEADS = [
-    AttentionHead(layer, head)
-    for layer in range(12)
-    for head in range(12)
-    if AttentionHead(layer, head) not in NAME_MOVER_GROUP
+    head for head in GPT2_SMALL_HEADS if head not in NAME_MOVER_GROUP
 ]
 
 

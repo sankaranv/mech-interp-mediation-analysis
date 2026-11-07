@@ -38,6 +38,14 @@ def write_numbers(name: str, numbers: dict, directory: Path = PAPER_DIRECTORY) -
     return path
 
 
+def write_table(name: str, latex: str, directory: Path = PAPER_DIRECTORY) -> Path:
+    """Write a LaTeX table as ``<name>.tex`` in ``directory``."""
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / f"{name}.tex"
+    path.write_text(latex.rstrip("\n") + "\n")
+    return path
+
+
 def save_figure(
     figure, name: str, directory: Path = PAPER_DIRECTORY, **save_options
 ) -> None:

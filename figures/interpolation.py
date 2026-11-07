@@ -72,7 +72,7 @@ def head_label(head: AttentionHead) -> str:
     """Legend text, e.g. ``L9H9 (NMH)``; a head outside the circuit is the control, OOC."""
     role = ioi_role(head)
     abbreviation = "OOC" if role == OTHER else IOI_ROLE_ABBREVIATIONS[role]
-    return f"L{head.layer}H{head.head} ({abbreviation})"
+    return f"{head.name} ({abbreviation})"
 
 
 def plot_interaction_by_distance(

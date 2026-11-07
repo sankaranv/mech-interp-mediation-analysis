@@ -23,7 +23,6 @@ from mediation.circuits import (
     DUPLICATE_TOKEN,
     INDUCTION,
     IOI_ROLE_ABBREVIATIONS,
-    IOI_UNCERTAIN_HEADS,
     NAME_MOVER_GROUP,
     NEGATIVE_NAME_MOVER,
     NON_NAME_MOVER_HEADS,
@@ -31,15 +30,17 @@ from mediation.circuits import (
     S_INHIBITION_HEADS,
     S_INHIBITION_PARTNER_HEADS,
     ioi_heads_with_roles,
+    table_head_name,
 )
 from mediation.estimands import cross_interaction
 from mediation.patching import AttentionHead
 from mediation.results import (
     OUTPUT_ROOT,
+    PAPER_DIRECTORY,
     head_effects_directory,
     load_pair_ranges,
-    paper_directory,
     write_numbers,
+    write_table,
 )
 from mediation.statistics import (
     latex_mean_with_interval,
@@ -73,12 +74,6 @@ Head & PIE $\pm$ CI & PIE rank & NIE $\pm$ CI & NIE rank
 TABLE_FOOTER = "\\bottomrule\n\\end{tabular}"
 
 
-def head_name(head: AttentionHead) -> str:
-    """``L9H9``, with a dagger on the heads whose role Wang et al. mark as uncertain."""
-    dagger = r"$^\dagger$" if head in IOI_UNCERTAIN_HEADS else ""
-    return f"L{head.layer}H{head.head}{dagger}"
-
-
 def grid_cross_interaction(arrays: dict, grid: str) -> np.ndarray:
     """xINT of every first set with every second set of a grid, shape (pairs, A, B)."""
     return cross_interaction(
@@ -102,7 +97,7 @@ def backup_table(arrays: dict, nie: np.ndarray, pie: np.ndarray) -> str:
     ):
         layer, index = head
         rows.append(
-            f"{head_name(head)} & {latex_mean_with_interval(pie[:, layer, index])} "
+            f"{table_head_name(head)} & {latex_mean_with_interval(pie[:, layer, index])} "
             f"& {pie_ranks[head]} "
             f"& {latex_mean_with_interval(nie[:, layer, index])} & {nie_ranks[head]} "
             f"& {latex_mean_with_interval(with_l9h9[:, BACKUP_NAME_MOVER_HEADS.index(head)])} "
@@ -126,7 +121,7 @@ def inhibition_table_header() -> str:
         trim = "(l)" if last_column == 1 + sum(sizes) else "(lr)"
         rules.append(f"\\cmidrule{trim}{{{first_column}-{last_column}}}")
         first_column = last_column + 1
-    columns = " & ".join(head_name(head) for head in S_INHIBITION_PARTNER_HEADS)
+    columns = " & ".join(table_head_name(head) for head in S_INHIBITION_PARTNER_HEADS)
     return "\n".join(
         [
             f"\\begin{{tabular}}{{@{{}}l*{{{len(S_INHIBITION_PARTNER_HEADS)}}}{{r}}@{{}}}}",
@@ -143,7 +138,7 @@ def inhibition_table(arrays: dict) -> str:
     """tab:sinh-xint: mean xINT of each S-Inhibition head with each partner head."""
     means = grid_cross_interaction(arrays, "s_inhibition").mean(axis=0)
     rows = [
-        f"{head_name(head)} & "
+        f"{table_head_name(head)} & "
         + " & ".join(f"${value:+.3f}$" for value in means[row])
         + " \\\\"
         for row, head in enumerate(S_INHIBITION_HEADS)
@@ -202,13 +197,13 @@ def inhibition_numbers(arrays: dict) -> dict:
             interval.mean[l8h6, S_INHIBITION_PARTNER_HEADS.index(AttentionHead(5, 5))]
         ),
         "negative_name_mover_nie_alone": {
-            head_name(head): float(
+            head.name: float(
                 nie_alone[:, S_INHIBITION_PARTNER_HEADS.index(head)].mean()
             )
             for head in negative_heads
         },
         "negative_name_mover_nie_with_l8h6_knocked_out": {
-            head_name(head): float(
+            head.name: float(
                 nie_without_l8h6[:, S_INHIBITION_PARTNER_HEADS.index(head)].mean()
             )
             for head in negative_heads
@@ -229,7 +224,7 @@ def name_mover_numbers(arrays: dict) -> dict:
     def per_head(heads: list[AttentionHead]) -> dict:
         columns = {head: NON_NAME_MOVER_HEADS.index(head) for head in heads}
         return {
-            head_name(head): {
+            head.name: {
                 "nie_alone": float(nie_alone[:, column].mean()),
                 "nie_with_name_movers_knocked_out": float(
                     nie_with_group_knocked_out[:, column].mean()
@@ -243,25 +238,27 @@ def name_mover_numbers(arrays: dict) -> dict:
     # positive once the Name Mover Heads are knocked out.
     quoted_heads = [*BACKUP_NAME_MOVER_HEADS, AttentionHead(10, 7)]
     return {
-        "name_mover_group": [head_name(head) for head in NAME_MOVER_GROUP],
+        "name_mover_group": [head.name for head in NAME_MOVER_GROUP],
         "heads": per_head(quoted_heads),
     }
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument("--output-directory", type=Path, default=OUTPUT_ROOT)
+    parser.add_argument("--output-root", type=Path, default=OUTPUT_ROOT)
+    parser.add_argument("--paper-directory", type=Path, default=PAPER_DIRECTORY)
     arguments = parser.parse_args()
 
-    root = arguments.output_directory
+    root = arguments.output_root
     arrays = load_pair_ranges(root / "ioi_cross_interactions")
     effects = load_pair_ranges(head_effects_directory(root, MODEL, "ioi_pabc"))
-    directory = paper_directory(root)
-    directory.mkdir(parents=True, exist_ok=True)
-    (directory / "ioi_bnmh_table.tex").write_text(
-        backup_table(arrays, effects["nie"], effects["pie"]) + "\n"
+    directory = arguments.paper_directory
+    write_table(
+        "ioi_bnmh_table",
+        backup_table(arrays, effects["nie"], effects["pie"]),
+        directory,
     )
-    (directory / "sinh_xint_table.tex").write_text(inhibition_table(arrays) + "\n")
+    write_table("sinh_xint_table", inhibition_table(arrays), directory)
     write_numbers(
         "ioi_cross_interaction_tables",
         {

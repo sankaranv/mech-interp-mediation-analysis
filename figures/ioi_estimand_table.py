@@ -18,18 +18,18 @@ import numpy as np
 from mediation.circuits import (
     IOI_ROLE_ABBREVIATIONS,
     IOI_ROLE_ORDER,
-    IOI_UNCERTAIN_HEADS,
     OTHER,
     ioi_circuit_heads,
     ioi_heads_with_roles,
+    table_head_name,
 )
-from mediation.patching import AttentionHead
 from mediation.results import (
     OUTPUT_ROOT,
     PAPER_DIRECTORY,
     head_effects_directory,
     load_pair_ranges,
     write_numbers,
+    write_table,
 )
 from mediation.statistics import latex_mean_with_interval, signed_ranks
 
@@ -43,12 +43,6 @@ Head & Group
   & \multicolumn{1}{c}{INT $\pm$ CI} \\
 \midrule"""
 TABLE_FOOTER = "\\bottomrule\n\\end{tabular}"
-
-
-def head_name(head: AttentionHead) -> str:
-    """``L9H9``, with a dagger on the heads whose role Wang et al. mark as uncertain."""
-    dagger = r"$^\dagger$" if head in IOI_UNCERTAIN_HEADS else ""
-    return f"L{head.layer}H{head.head}{dagger}"
 
 
 def table_rows(nie: np.ndarray, pie: np.ndarray) -> list[str]:
@@ -66,7 +60,7 @@ def table_rows(nie: np.ndarray, pie: np.ndarray) -> list[str]:
         ):
             layer, index = head
             rows.append(
-                f"{head_name(head)} & {IOI_ROLE_ABBREVIATIONS[role]} "
+                f"{table_head_name(head)} & {IOI_ROLE_ABBREVIATIONS[role]} "
                 f"& {latex_mean_with_interval(pie[:, layer, index])} & {pie_ranks[head]} "
                 f"& {latex_mean_with_interval(nie[:, layer, index])} & {nie_ranks[head]} "
                 f"& {latex_mean_with_interval(interaction[:, layer, index])} \\\\"
@@ -94,9 +88,8 @@ def main() -> None:
     )
     nie, pie = effects["nie"], effects["pie"]
     directory = arguments.paper_directory
-    directory.mkdir(parents=True, exist_ok=True)
     table = "\n".join([TABLE_HEADER, *table_rows(nie, pie), TABLE_FOOTER])
-    (directory / "ioi_estimand_table.tex").write_text(table + "\n")
+    write_table("ioi_estimand_table", table, directory)
     write_numbers(
         "ioi_estimand_table",
         {

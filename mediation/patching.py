@@ -18,6 +18,11 @@ class AttentionHead(NamedTuple):
     layer: int
     head: int
 
+    @property
+    def name(self) -> str:
+        """The head as written in the paper, ``L9H9``."""
+        return f"L{self.layer}H{self.head}"
+
 
 class MlpLayer(NamedTuple):
     layer: int

@@ -62,18 +62,14 @@ def count_programs(natural: dict, pure: dict) -> dict:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument(
-        "--output-directory",
-        type=Path,
-        default=OUTPUT_ROOT / "tracr_interactions",
-        help="directory of the experiment's arrays",
-    )
+    parser.add_argument("--output-root", type=Path, default=OUTPUT_ROOT)
     parser.add_argument("--paper-directory", type=Path, default=PAPER_DIRECTORY)
     arguments = parser.parse_args()
 
+    directory = arguments.output_root / "tracr_interactions"
     with (
-        np.load(arguments.output_directory / "natural_indirect_effects.npz") as natural,
-        np.load(arguments.output_directory / "pure_indirect_effects.npz") as pure,
+        np.load(directory / "natural_indirect_effects.npz") as natural,
+        np.load(directory / "pure_indirect_effects.npz") as pure,
     ):
         counts = count_programs(dict(natural), dict(pure))
     write_numbers("tracr_counts", counts, arguments.paper_directory)
