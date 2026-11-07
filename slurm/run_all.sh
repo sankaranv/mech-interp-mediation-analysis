@@ -1,10 +1,14 @@
 #!/bin/bash
-# Submit every experiment of the paper to SLURM, one job per range of prompt pairs.
+# Submit every experiment of the paper to SLURM, one job per range of prompt pairs, and a
+# last job that makes every figure and table once they have all succeeded.
 #
 # Run from anywhere; jobs write to outputs/ of the repository. Restrict the per-head
 # effects to some models with, for example,
 #   MODELS="gpt2-small pythia-70m" slurm/run_all.sh
-# Afterwards, when the jobs have finished, run figures/make_all.sh.
+# Ranges whose result file already exists in outputs/ are not submitted again, so after
+# an interruption (or after jobs failed) run the script again once no job of the earlier
+# submission is left in the queue. The figure job then waits only for the jobs of this
+# submission; with every range already done it is the only job submitted.
 #
 # Range sizes target about 30 minutes per job. Seconds per prompt pair of the per-head
 # effects (GPU-hours of the paper's runs divided by their pairs): GPT-2 small 3.5,
@@ -53,17 +57,29 @@ resource_options() {
     esac
 }
 
-# submit_ranges SCRIPT TOTAL PER_JOB [SBATCH OPTION...]: ceil(TOTAL / PER_JOB) jobs over
-# ranges of TOTAL pairs that differ in size by at most one pair; the script reads
-# PAIR_START and PAIR_STOP (stop excluded) from the environment.
+submitted_jobs=()
+skipped_ranges=0
+
+# submit_ranges RESULT SCRIPT TOTAL PER_JOB [SBATCH OPTION...]: ceil(TOTAL / PER_JOB) jobs
+# over ranges of TOTAL pairs that differ in size by at most one pair; the script reads
+# PAIR_START and PAIR_STOP (stop excluded) from the environment. A range is skipped if its
+# file pairs_<start>_<stop>.npz (named as mediation.results.save_pair_range does) is in
+# outputs/RESULT. The ids of the submitted jobs are appended to submitted_jobs.
 submit_ranges() {
-    local script=$1 total=$2 per_job=$3
-    shift 3
+    local result=$1 script=$2 total=$3 per_job=$4
+    shift 4
     local jobs=$(((total + per_job - 1) / per_job))
-    local job
+    local job start stop file
     for ((job = 0; job < jobs; job++)); do
-        PAIR_START=$((total * job / jobs)) PAIR_STOP=$((total * (job + 1) / jobs)) \
-            sbatch "$@" "$script"
+        start=$((total * job / jobs))
+        stop=$((total * (job + 1) / jobs))
+        printf -v file "outputs/%s/pairs_%05d_%05d.npz" "$result" "$start" "$stop"
+        if [[ -e $file ]]; then
+            skipped_ranges=$((skipped_ranges + 1))
+        else
+            submitted_jobs+=("$(PAIR_START=$start PAIR_STOP=$stop \
+                sbatch --parsable "$@" "$script")")
+        fi
     done
 }
 
@@ -71,25 +87,42 @@ submit_ranges() {
 for model in $MODELS; do
     read -ra options <<<"$(resource_options "$model")"
     for task in $(tasks_of "$model"); do
-        MODEL=$model TASK=$task submit_ranges slurm/head_effects.sh \
-            "$(pair_count "$model" "$task")" "${PAIRS_PER_JOB[$model]}" \
-            "${options[@]}"
+        MODEL=$model TASK=$task submit_ranges "head_effects/$model/$task" \
+            slurm/head_effects.sh "$(pair_count "$model" "$task")" \
+            "${PAIRS_PER_JOB[$model]}" "${options[@]}"
     done
 done
 
 # The experiments below all run on GPT-2 small.
 # Figure 2 (about 3 seconds per pair).
-submit_ranges slurm/interpolation.sh 1000 500
+submit_ranges interpolation slurm/interpolation.sh 1000 500
 # Section 4 (under a second per pair).
-submit_ranges slurm/circuit_knockout.sh 1000 1000
+submit_ranges circuit_knockout slurm/circuit_knockout.sh 1000 1000
 # Section 5 and Appendix B cross-interactions (about 3 seconds per pair).
-submit_ranges slurm/ioi_cross_interactions.sh 1000 500
-# Appendix C (about 2 seconds per pair).
-submit_ranges slurm/greater_than_cross_interactions.sh 1000 500
+submit_ranges ioi_cross_interactions slurm/ioi_cross_interactions.sh 1000 500
+# Appendix C (about 2 seconds per pair). A job writes the mean ablation before the resample
+# ablation, so the resample file shows that both are done.
+submit_ranges greater_than_cross_interactions/resample \
+    slurm/greater_than_cross_interactions.sh 1000 500
 
 # Section 3 Tracr counts: a CPU job in its own environment (environment/tracr.md).
-if [[ -d .venv-tracr ]]; then
-    sbatch slurm/tracr_interactions.sh
+if [[ -d .venv-tracr && -d external/InterpBench ]]; then
+    if [[ ! -e outputs/tracr_interactions/programs.json ]]; then
+        submitted_jobs+=("$(sbatch --parsable slurm/tracr_interactions.sh)")
+    fi
 else
-    echo "Skipping Tracr: .venv-tracr is missing (see environment/tracr.md)" >&2
+    echo "Skipping Tracr: .venv-tracr or external/InterpBench is missing" \
+        "(see environment/tracr.md)" >&2
 fi
+
+# Every figure and table, after every job of this submission has succeeded. If one fails,
+# the figure job is cancelled; run this script again to resubmit the missing ranges.
+dependency=()
+if ((${#submitted_jobs[@]} > 0)); then
+    dependency=(--kill-on-invalid-dep=yes
+        "--dependency=afterok:$(IFS=:; echo "${submitted_jobs[*]}")")
+fi
+sbatch --parsable "${dependency[@]}" slurm/figures.sh >/dev/null
+
+echo "Submitted ${#submitted_jobs[@]} jobs and the figure job;" \
+    "$skipped_ranges ranges were already done"

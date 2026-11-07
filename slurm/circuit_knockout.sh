@@ -22,23 +22,5 @@ source .venv/bin/activate
 
 python -u experiments/circuit_knockout.py --pairs "${PAIR_START}:${PAIR_STOP}"
 
-# Check that the range was written and every array is finite.
-python -u - <<'EOF'
-import os
-import sys
-
-import numpy as np
-
-from mediation.results import OUTPUT_ROOT
-
-directory = OUTPUT_ROOT / "circuit_knockout"
-start = int(os.environ["PAIR_START"])
-files = sorted(directory.glob(f"pairs_{start:05d}_*.npz"))
-if len(files) != 1:
-    sys.exit(f"FAIL: no result for pairs from {start} in {directory}")
-with np.load(files[0]) as arrays:
-    for name in arrays.files:
-        if not np.isfinite(arrays[name]).all():
-            sys.exit(f"FAIL: non-finite {name} in {files[0]}")
-    print(f"OK: {files[0]} holds {len(arrays.files)} finite arrays")
-EOF
+# Check that the range was written and holds finite values.
+python -u slurm/check_pair_range.py "circuit_knockout" "$PAIR_START"

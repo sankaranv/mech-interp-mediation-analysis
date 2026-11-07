@@ -26,29 +26,8 @@ python -u experiments/greater_than_cross_interactions.py \
     --pairs "${PAIR_START}:${PAIR_STOP}"
 
 # Check that both ablations wrote the range and hold finite metrics: every single and every
-# pair (the upper triangle of y_joint; the rest is NaN by design).
-python -u - <<'EOF'
-import os
-import sys
-
-import numpy as np
-
-from mediation.results import OUTPUT_ROOT
-
-start = int(os.environ["PAIR_START"])
-for ablation in ("mean", "resample"):
-    directory = OUTPUT_ROOT / "greater_than_cross_interactions" / ablation
-    files = sorted(directory.glob(f"pairs_{start:05d}_*.npz"))
-    if len(files) != 1:
-        sys.exit(f"FAIL: no result for pairs from {start} in {directory}")
-    with np.load(files[0]) as arrays:
-        upper = np.triu_indices(arrays["y_single"].shape[1], k=1)
-        finite = (
-            np.isfinite(arrays["y_clean"]).all()
-            and np.isfinite(arrays["y_single"]).all()
-            and np.isfinite(arrays["y_joint"][:, upper[0], upper[1]]).all()
-        )
-        if not finite:
-            sys.exit(f"FAIL: non-finite metric in {files[0]}")
-        print(f"OK: {files[0]} y_joint shape {arrays['y_joint'].shape}, all finite")
-EOF
+# pair (y_joint is NaN on and below the diagonal by design).
+for ablation in mean resample; do
+    python -u slurm/check_pair_range.py "greater_than_cross_interactions/$ablation" \
+        "$PAIR_START" --upper-triangle y_joint
+done

@@ -28,22 +28,4 @@ python -u experiments/head_effects.py \
     --model "$MODEL" --task "$TASK" --pairs "${PAIR_START}:${PAIR_STOP}"
 
 # Check that the range was written and holds finite effects for every head.
-python -u - <<'EOF'
-import os
-import sys
-
-import numpy as np
-
-from mediation.results import OUTPUT_ROOT, head_effects_directory
-
-directory = head_effects_directory(OUTPUT_ROOT, os.environ["MODEL"], os.environ["TASK"])
-start = int(os.environ["PAIR_START"])
-files = sorted(directory.glob(f"pairs_{start:05d}_*.npz"))
-if len(files) != 1:
-    sys.exit(f"FAIL: no result for pairs from {start} in {directory}")
-with np.load(files[0]) as arrays:
-    for name in ("nie", "pie"):
-        if not np.isfinite(arrays[name]).all():
-            sys.exit(f"FAIL: non-finite {name} in {files[0]}")
-    print(f"OK: {files[0]} nie shape {arrays['nie'].shape}, all finite")
-EOF
+python -u slurm/check_pair_range.py "head_effects/$MODEL/$TASK" "$PAIR_START"
