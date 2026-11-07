@@ -78,7 +78,7 @@ GPU-hours, nearly all of it GPT-2 XL, Pythia-6.9B and Llama-3.1-8B.
 ### Locally, for GPT-2 small
 
 The per-head effects of GPT-2 small on the five tasks take about 5 GPU-hours (3.5 seconds
-per pair) and the other experiments about 3 GPU-hours.
+per pair) and the other experiments about 2.5 GPU-hours.
 
 ```bash
 for task in ioi_pabc ioi_symmetric sva gender_bias greater_than; do
