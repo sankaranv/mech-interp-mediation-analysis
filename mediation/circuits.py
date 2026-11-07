@@ -98,6 +98,34 @@ def ioi_circuit_heads() -> list[AttentionHead]:
     return sorted(IOI_HEAD_ROLES)
 
 
+def ioi_heads_with_roles(*roles: str) -> list[AttentionHead]:
+    """Circuit heads that have one of ``roles``, grouped by role in the order given and,
+    within a role, in the order of :data:`IOI_HEAD_ROLES`, which is the column order of the
+    paper's tables."""
+    return [
+        head
+        for role in roles
+        for head, head_role in IOI_HEAD_ROLES.items()
+        if head_role == role
+    ]
+
+
+# Head groups whose cross-interactions Section 5.3 and Appendix B report, in table order.
+NAME_MOVER_GROUP = ioi_heads_with_roles(NAME_MOVER)
+S_INHIBITION_HEADS = ioi_heads_with_roles(S_INHIBITION)
+S_INHIBITION_PARTNER_HEADS = ioi_heads_with_roles(
+    DUPLICATE_TOKEN, INDUCTION, PREVIOUS_TOKEN, NEGATIVE_NAME_MOVER
+)
+BACKUP_NAME_MOVER_HEADS = ioi_heads_with_roles(BACKUP_NAME_MOVER)
+# The other 141 heads of GPT-2 small (12 layers of 12 heads), in layer and head order.
+NON_NAME_MOVER_HEADS = [
+    AttentionHead(layer, head)
+    for layer in range(12)
+    for head in range(12)
+    if AttentionHead(layer, head) not in NAME_MOVER_GROUP
+]
+
+
 GREATER_THAN_EARLY_MLPS = [MlpLayer(layer) for layer in range(4)]
 GREATER_THAN_LATE_MLPS = [MlpLayer(layer) for layer in range(8, 12)]
 

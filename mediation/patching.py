@@ -26,6 +26,15 @@ class MlpLayer(NamedTuple):
 Component = AttentionHead | MlpLayer
 
 
+def all_attention_heads(model: LoadedModel) -> list[AttentionHead]:
+    """Every attention head of the model, sorted by layer and head."""
+    return [
+        AttentionHead(layer, head)
+        for layer in range(model.num_layers)
+        for head in range(model.num_heads)
+    ]
+
+
 @dataclass
 class Activations:
     """Mediator activations of one prompt, or their mean over several prompts.

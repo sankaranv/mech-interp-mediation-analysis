@@ -22,9 +22,9 @@ import numpy as np
 from mediation.models import LoadedModel
 from mediation.patching import (
     Activations,
-    AttentionHead,
     Component,
     MlpLayer,
+    all_attention_heads,
     cache_activations,
     run_with_source,
 )
@@ -79,12 +79,7 @@ def component_effects(
 
 def head_effects(model: LoadedModel, pair: PromptPair) -> MediatorEffects:
     """NIE and PIE of every attention head alone, arrays of shape (num_layers, num_heads)."""
-    heads = [
-        AttentionHead(layer, head)
-        for layer in range(model.num_layers)
-        for head in range(model.num_heads)
-    ]
-    effects = component_effects(model, pair, heads)
+    effects = component_effects(model, pair, all_attention_heads(model))
     shape = (model.num_layers, model.num_heads)
     return MediatorEffects(effects.nie.reshape(shape), effects.pie.reshape(shape))
 
@@ -134,6 +129,59 @@ class JointOutcomes:
         return cross_interaction(self.y_empty, self.y_first, self.y_second, self.y_both)
 
 
+@dataclass(frozen=True)
+class OutcomeGrid:
+    """The patched metrics that determine every cross-interaction between two lists of sets.
+
+    :ivar y_empty: nothing replaced.
+    :ivar y_first: metric with ``first[a]`` replaced, shape (A,).
+    :ivar y_second: metric with ``second[b]`` replaced, shape (B,).
+    :ivar y_both: metric with ``first[a]`` and ``second[b]`` replaced together, shape (A, B).
+    """
+
+    y_empty: float
+    y_first: np.ndarray
+    y_second: np.ndarray
+    y_both: np.ndarray
+
+    @property
+    def cross_interaction(self) -> np.ndarray:
+        """xINT of every ``first[a]`` with every ``second[b]``, shape (A, B)."""
+        return cross_interaction(
+            self.y_empty,
+            self.y_first[:, None],
+            self.y_second[None, :],
+            self.y_both,
+        )
+
+
+def joint_outcome_grid(
+    model: LoadedModel,
+    pair: PromptPair,
+    source: Activations,
+    first: Sequence[Collection[Component]],
+    second: Sequence[Collection[Component]],
+) -> OutcomeGrid:
+    """``Y(empty)``, ``Y(A)``, ``Y(B)`` and ``Y(A + B)`` for every ``A`` in ``first`` and
+    ``B`` in ``second``, on the clean prompt of ``pair``.
+
+    Each set is replaced together in one forward pass, so a set of many heads (a circuit
+    and its complement, a group of Name Mover Heads) is one mediator in Theorem 4.1. The
+    unpatched run and each single set are run once and shared by all cells, so the grid
+    costs ``1 + A + B + A * B`` passes.
+    """
+
+    def outcome(components: Collection[Component]) -> float:
+        return patched_metric(model, pair.clean_tokens, pair, source, components)
+
+    return OutcomeGrid(
+        y_empty=outcome([]),
+        y_first=np.array([outcome(a) for a in first]),
+        y_second=np.array([outcome(b) for b in second]),
+        y_both=np.array([[outcome([*a, *b]) for b in second] for a in first]),
+    )
+
+
 def joint_outcomes(
     model: LoadedModel,
     pair: PromptPair,
@@ -141,19 +189,12 @@ def joint_outcomes(
     first: Collection[Component],
     second: Collection[Component],
 ) -> JointOutcomes:
-    """``Y(empty)``, ``Y(A)``, ``Y(B)``, ``Y(A + B)`` on the clean prompt of ``pair``.
-
-    The sets are replaced together in one forward pass, so a set of many heads (a circuit
-    and its complement, a group of Name Mover Heads) is one mediator in Theorem 4.1.
-    """
-    tokens = pair.clean_tokens
-
-    def outcome(components: Collection[Component]) -> float:
-        return patched_metric(model, tokens, pair, source, components)
-
+    """``Y(empty)``, ``Y(A)``, ``Y(B)``, ``Y(A + B)`` on the clean prompt of ``pair``;
+    the one-cell case of :func:`joint_outcome_grid`."""
+    grid = joint_outcome_grid(model, pair, source, [first], [second])
     return JointOutcomes(
-        y_empty=outcome([]),
-        y_first=outcome(first),
-        y_second=outcome(second),
-        y_both=outcome([*first, *second]),
+        y_empty=grid.y_empty,
+        y_first=float(grid.y_first[0]),
+        y_second=float(grid.y_second[0]),
+        y_both=float(grid.y_both[0, 0]),
     )

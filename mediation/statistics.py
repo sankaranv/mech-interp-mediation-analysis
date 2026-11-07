@@ -26,6 +26,13 @@ def mean_with_confidence_interval(
     return MeanWithInterval(values.mean(axis=axis), half_width)
 
 
+def latex_mean_with_interval(values: np.ndarray) -> str:
+    """Table cell ``$+0.123 \\pm 0.004$``: the mean over prompt pairs (axis 0 of the 1-D
+    ``values``) and the half-width of its 95% interval, to three decimals."""
+    interval = mean_with_confidence_interval(values)
+    return f"${interval.mean:+.3f} \\pm {interval.half_width:.3f}$"
+
+
 def standard_error(values: np.ndarray, axis: int = 0) -> np.ndarray:
     """Standard error of the mean, ``SD / sqrt(N)`` with the population standard deviation
     (``ddof=0``), as the shaded bands of Figure 2 use."""
