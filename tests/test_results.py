@@ -7,14 +7,20 @@ from mediation.results import load_pair_ranges, parse_pair_range, save_pair_rang
 def test_ranges_are_concatenated_in_pair_order(tmp_path):
     save_pair_range(tmp_path, 3, 5, nie=np.array([3.0, 4.0]))
     save_pair_range(tmp_path, 0, 3, nie=np.array([0.0, 1.0, 2.0]))
-    assert load_pair_ranges(tmp_path)["nie"].tolist() == [0.0, 1.0, 2.0, 3.0, 4.0]
+    assert load_pair_ranges(tmp_path, 5)["nie"].tolist() == [0.0, 1.0, 2.0, 3.0, 4.0]
 
 
 def test_missing_range_is_an_error(tmp_path):
     save_pair_range(tmp_path, 0, 2, nie=np.zeros(2))
     save_pair_range(tmp_path, 3, 5, nie=np.zeros(2))
     with pytest.raises(ValueError, match="pairs 2 to 2 missing"):
-        load_pair_ranges(tmp_path)
+        load_pair_ranges(tmp_path, 5)
+
+
+def test_missing_last_range_is_an_error(tmp_path):
+    save_pair_range(tmp_path, 0, 3, nie=np.zeros(3))
+    with pytest.raises(ValueError, match="covers 3 of 5 pairs"):
+        load_pair_ranges(tmp_path, 5)
 
 
 def test_rows_must_match_range(tmp_path):

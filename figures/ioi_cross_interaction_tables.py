@@ -48,6 +48,7 @@ from mediation.statistics import (
     mean_with_confidence_interval,
     signed_ranks,
 )
+from mediation.tasks import pair_count
 
 MODEL = "gpt2-small"
 
@@ -251,8 +252,9 @@ def main() -> None:
     arguments = parser.parse_args()
 
     root = arguments.output_root
-    arrays = load_pair_ranges(root / "ioi_cross_interactions")
-    effects = load_pair_ranges(head_effects_directory(root, MODEL, "ioi_pabc"))
+    pairs = pair_count("ioi_pabc", MODEL)
+    arrays = load_pair_ranges(root / "ioi_cross_interactions", pairs)
+    effects = load_pair_ranges(head_effects_directory(root, MODEL, "ioi_pabc"), pairs)
     directory = arguments.paper_directory
     write_table(
         "ioi_backup_name_mover_table",

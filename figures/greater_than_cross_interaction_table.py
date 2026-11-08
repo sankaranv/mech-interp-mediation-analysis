@@ -22,6 +22,7 @@ from mediation.results import (
     write_table,
 )
 from mediation.statistics import interval_summary, latex_mean_with_interval
+from mediation.tasks import pair_count
 
 ABLATIONS = ("mean", "resample")
 
@@ -122,7 +123,8 @@ def main() -> None:
 
     runs = {
         ablation: load_pair_ranges(
-            arguments.output_root / "greater_than_cross_interactions" / ablation
+            arguments.output_root / "greater_than_cross_interactions" / ablation,
+            pair_count("greater_than", "gpt2-small"),
         )
         for ablation in ABLATIONS
     }

@@ -27,6 +27,7 @@ from mediation.results import (
     write_numbers,
 )
 from mediation.statistics import rank_agreement
+from mediation.tasks import pair_count
 
 # (model, label, colour), grouped by family. A family shares a hue and darker means a
 # larger model; the two largest GPT-2 and Pythia models stay distinguishable.
@@ -66,7 +67,7 @@ def load_rank_agreements(output_root: Path) -> np.ndarray:
         for column, (model, _, _) in enumerate(MODEL_STYLES):
             directory = head_effects_directory(output_root, model, task)
             if directory.exists():
-                effects = load_pair_ranges(directory)
+                effects = load_pair_ranges(directory, pair_count(task, model))
                 agreement[row, column] = rank_agreement(effects["nie"], effects["pie"])
     return agreement
 

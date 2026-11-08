@@ -24,6 +24,7 @@ from mediation.results import (
     write_numbers,
 )
 from mediation.statistics import interval_summary
+from mediation.tasks import pair_count
 
 
 def knockout_numbers(arrays: dict[str, np.ndarray]) -> dict:
@@ -62,7 +63,9 @@ def main() -> None:
     parser.add_argument("--output-root", type=Path, default=OUTPUT_ROOT)
     parser.add_argument("--paper-directory", type=Path, default=PAPER_DIRECTORY)
     arguments = parser.parse_args()
-    arrays = load_pair_ranges(arguments.output_root / "circuit_knockout")
+    arrays = load_pair_ranges(
+        arguments.output_root / "circuit_knockout", pair_count("ioi_pabc", "gpt2-small")
+    )
     write_numbers(
         "circuit_knockout", knockout_numbers(arrays), arguments.paper_directory
     )

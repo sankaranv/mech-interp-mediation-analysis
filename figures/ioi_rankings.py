@@ -39,6 +39,7 @@ from mediation.results import (
     write_numbers,
 )
 from mediation.statistics import signed_ranks
+from mediation.tasks import pair_count
 
 MODEL = "gpt2-small"
 
@@ -180,10 +181,12 @@ def main() -> None:
     arguments = parser.parse_args()
 
     effects = load_pair_ranges(
-        head_effects_directory(arguments.output_root, MODEL, "ioi_pabc")
+        head_effects_directory(arguments.output_root, MODEL, "ioi_pabc"),
+        pair_count("ioi_pabc", MODEL),
     )
     symmetric = load_pair_ranges(
-        head_effects_directory(arguments.output_root, MODEL, "ioi_symmetric")
+        head_effects_directory(arguments.output_root, MODEL, "ioi_symmetric"),
+        pair_count("ioi_symmetric", MODEL),
     )
     directory = arguments.paper_directory
     figure = plot(effects["nie"], effects["pie"])

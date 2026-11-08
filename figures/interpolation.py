@@ -29,6 +29,7 @@ from mediation.results import (
     write_numbers,
 )
 from mediation.statistics import mean_with_confidence_interval, standard_error
+from mediation.tasks import pair_count
 
 # Plot style: the dark-grey, outward-ticked look of the published figure, set here so that
 # the figure needs matplotlib only.
@@ -149,7 +150,9 @@ def main() -> None:
     parser.add_argument("--paper-directory", type=Path, default=PAPER_DIRECTORY)
     arguments = parser.parse_args()
 
-    arrays = load_pair_ranges(arguments.output_root / "interpolation")
+    arrays = load_pair_ranges(
+        arguments.output_root / "interpolation", pair_count("ioi_pabc", "gpt2-small")
+    )
     interaction = interaction_curves(arrays)
     distance = arrays["activation_distance"]
     plot_interaction_by_distance(

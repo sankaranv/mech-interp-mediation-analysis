@@ -32,6 +32,7 @@ from mediation.results import (
     write_table,
 )
 from mediation.statistics import latex_mean_with_interval, signed_ranks
+from mediation.tasks import pair_count
 
 MODEL = "gpt2-small"
 
@@ -84,7 +85,8 @@ def main() -> None:
     arguments = parser.parse_args()
 
     effects = load_pair_ranges(
-        head_effects_directory(arguments.output_root, MODEL, "ioi_pabc")
+        head_effects_directory(arguments.output_root, MODEL, "ioi_pabc"),
+        pair_count("ioi_pabc", MODEL),
     )
     nie, pie = effects["nie"], effects["pie"]
     directory = arguments.paper_directory

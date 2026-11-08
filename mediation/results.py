@@ -84,11 +84,12 @@ def save_pair_range(
     return path
 
 
-def load_pair_ranges(directory: Path) -> dict[str, np.ndarray]:
+def load_pair_ranges(directory: Path, pair_count: int) -> dict[str, np.ndarray]:
     """Concatenate every pair-range file in ``directory`` in pair order.
 
-    :raises ValueError: if the ranges leave a gap, overlap, or do not start at pair 0, so a
-        missing job cannot silently shorten a result.
+    :param pair_count: number of prompt pairs the result must cover.
+    :raises ValueError: if the ranges leave a gap, overlap, do not start at pair 0 or do not
+        reach ``pair_count``, so a missing job cannot silently shorten a result.
     """
     files = sorted(directory.glob("pairs_*_*.npz"))
     if not files:
@@ -105,4 +106,6 @@ def load_pair_ranges(directory: Path) -> dict[str, np.ndarray]:
             for name in arrays.files:
                 parts.setdefault(name, []).append(arrays[name])
         expected_start = stop
+    if expected_start != pair_count:
+        raise ValueError(f"{directory}: covers {expected_start} of {pair_count} pairs")
     return {name: np.concatenate(values) for name, values in parts.items()}

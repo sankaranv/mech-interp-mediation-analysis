@@ -41,6 +41,7 @@ from mediation.results import (
     save_figure,
     write_numbers,
 )
+from mediation.tasks import pair_count
 
 MODEL = "gpt2-small"
 
@@ -214,7 +215,8 @@ def main() -> None:
     arguments = parser.parse_args()
 
     effects = load_pair_ranges(
-        head_effects_directory(arguments.output_root, MODEL, "ioi_pabc")
+        head_effects_directory(arguments.output_root, MODEL, "ioi_pabc"),
+        pair_count("ioi_pabc", MODEL),
     )
     directory = arguments.paper_directory
     figure = plot(effects["nie"], effects["pie"])

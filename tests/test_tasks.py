@@ -74,16 +74,26 @@ def test_shipped_gender_bias_files_are_the_builder_output(model_name, family):
     assert built.equals(pd.read_csv(GENDER_BIAS_DIRECTORY / f"{family}.csv"))
 
 
+GPT2_MODELS = ["gpt2-small", "gpt2-medium", "gpt2-xl"]
+PYTHIA_MODELS = ["pythia-70m", "pythia-6.9b"]
+LLAMA_ARCHITECTURE_MODELS = ["qwen2.5-0.5b", "llama-3.1-8b"]
+ALL_MODELS = GPT2_MODELS + PYTHIA_MODELS + LLAMA_ARCHITECTURE_MODELS
+
+
 @pytest.mark.parametrize(
     "model_name, task, count",
     [
-        ("gpt2-small", "ioi_pabc", 1000),
-        ("gpt2-small", "gender_bias", 986),
-        ("gpt2-small", "greater_than", 1000),
-        ("pythia-70m", "ioi_pabc", 691),
-        ("pythia-70m", "ioi_symmetric", 1000),
-        ("pythia-70m", "gender_bias", 782),
-        ("pythia-70m", "sva", 1000),
+        (model, task, count)
+        for models, task, count in [
+            (GPT2_MODELS + LLAMA_ARCHITECTURE_MODELS, "ioi_pabc", 1000),
+            (PYTHIA_MODELS, "ioi_pabc", 691),
+            (ALL_MODELS, "ioi_symmetric", 1000),
+            (ALL_MODELS, "sva", 1000),
+            (GPT2_MODELS + LLAMA_ARCHITECTURE_MODELS, "gender_bias", 986),
+            (PYTHIA_MODELS, "gender_bias", 782),
+            (GPT2_MODELS + PYTHIA_MODELS, "greater_than", 1000),
+        ]
+        for model in models
     ],
 )
 def test_pair_counts_of_the_paper(model_name, task, count):

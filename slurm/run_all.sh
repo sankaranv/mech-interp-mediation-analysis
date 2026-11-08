@@ -36,14 +36,10 @@ tasks_of() {
     echo "$tasks"
 }
 
-# Number of prompt pairs of a task under a model's tokenizer: the pABC pairs are filtered
-# to equal length under Pythia's tokenizer and Gender Bias has one file per tokenizer.
+# Number of prompt pairs of a task under a model's tokenizer, from the task loaders, so the
+# submitted ranges cover exactly the pairs the experiments and figures read.
 pair_count() {
-    case "$2" in
-        ioi_pabc) [[ $1 == pythia-* ]] && echo 691 || echo 1000 ;;
-        gender_bias) [[ $1 == pythia-* ]] && echo 782 || echo 986 ;;
-        *) echo 1000 ;;
-    esac
+    .venv/bin/python -c "from mediation.tasks import pair_count; print(pair_count('$2', '$1'))"
 }
 
 # sbatch options that the template of head_effects.sh does not already carry. Pythia-6.9B
@@ -95,15 +91,16 @@ done
 
 # The experiments below all run on GPT-2 small.
 # Figure 2 (about 3 seconds per pair).
-submit_ranges interpolation slurm/interpolation.sh 1000 500
+submit_ranges interpolation slurm/interpolation.sh "$(pair_count gpt2-small ioi_pabc)" 500
 # Section 4 (under a second per pair).
-submit_ranges circuit_knockout slurm/circuit_knockout.sh 1000 1000
+submit_ranges circuit_knockout slurm/circuit_knockout.sh "$(pair_count gpt2-small ioi_pabc)" 1000
 # Section 5 and Appendix B cross-interactions (about 3 seconds per pair).
-submit_ranges ioi_cross_interactions slurm/ioi_cross_interactions.sh 1000 500
+submit_ranges ioi_cross_interactions slurm/ioi_cross_interactions.sh \
+    "$(pair_count gpt2-small ioi_pabc)" 500
 # Appendix C (about 2 seconds per pair). A job writes the mean ablation before the resample
 # ablation, so the resample file shows that both are done.
 submit_ranges greater_than_cross_interactions/resample \
-    slurm/greater_than_cross_interactions.sh 1000 500
+    slurm/greater_than_cross_interactions.sh "$(pair_count gpt2-small greater_than)" 500
 
 # Section 3 Tracr counts: a CPU job in its own environment (environment/tracr.md).
 if [[ -d .venv-tracr && -d external/InterpBench ]]; then

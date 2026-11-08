@@ -40,3 +40,8 @@ def load_prompt_pairs(task: str, model_name: str) -> list[PromptPair]:
     if task == "greater_than":
         return load_greater_than_pairs(tokenizer, family)
     raise ValueError(f"task must be one of {TASKS}")
+
+
+def pair_count(task: str, model_name: str) -> int:
+    """Number of prompt pairs the paper uses for ``task`` under the tokenizer of a model."""
+    return len(load_prompt_pairs(task, model_name))
