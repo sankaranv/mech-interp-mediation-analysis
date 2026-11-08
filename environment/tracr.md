@@ -23,8 +23,9 @@ git -C external/InterpBench checkout 220791e4a9cd29957ed5edfa445e7c09152d7298
 
 `pygraphviz` is imported by `circuits_benchmark` and needs Graphviz, hence conda-forge.
 `environment/tracr_requirements.txt` pins the packages of the environment that produced
-the published counts, with the Tracr, IIT and ACDC forks at the commits the benchmark's
-`pyproject.toml` resolved to. The benchmark itself is used from its checkout through
+the published counts, with the Tracr fork at the commit the benchmark's `pyproject.toml`
+resolved to; `environment/tracr_forks_requirements.txt` does the same for the IIT and ACDC
+forks. The benchmark itself is used from its checkout through
 `PYTHONPATH` rather than installed:
 
 ```bash
