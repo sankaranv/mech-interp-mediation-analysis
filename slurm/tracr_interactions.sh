@@ -9,7 +9,7 @@
 #SBATCH --partition=cpu
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
-#SBATCH --time=01:00:00
+#SBATCH --time=00:20:00
 #SBATCH --requeue
 #SBATCH --output=outputs/logs/tracr_interactions_%j.out
 #SBATCH --error=outputs/logs/tracr_interactions_%j.err
@@ -17,6 +17,8 @@
 set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
 export PYTHONPATH="$PWD/external/InterpBench"
+# Fixes the set order in the benchmark's input generators (see environment/tracr.md).
+export PYTHONHASHSEED=0
 
 .venv-tracr/bin/python -u experiments/tracr_interactions.py
 
