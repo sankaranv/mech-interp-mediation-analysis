@@ -10,9 +10,11 @@ imported from this repository, so the main package is installed without its depe
 The benchmark is not vendored; clone it at the commit the published counts used.
 
 ```bash
-# Run from the repository root.
+# Run from the repository root. conda is required; on a cluster with environment modules,
+# load it first (for example `module load conda/latest`).
 conda create --prefix .venv-tracr python=3.11 pygraphviz -c conda-forge
 .venv-tracr/bin/python -m pip install -r environment/tracr_requirements.txt
+.venv-tracr/bin/python -m pip install --no-deps -r environment/tracr_forks_requirements.txt
 .venv-tracr/bin/python -m pip install --no-deps -e .
 
 git clone https://github.com/FlyingPumba/InterpBench external/InterpBench
@@ -26,9 +28,15 @@ the published counts, with the Tracr, IIT and ACDC forks at the commits the benc
 `PYTHONPATH` rather than installed:
 
 ```bash
-PYTHONPATH="$PWD/external/InterpBench" .venv-tracr/bin/python \
+PYTHONHASHSEED=0 PYTHONPATH="$PWD/external/InterpBench" .venv-tracr/bin/python \
     experiments/tracr_interactions.py
 ```
+
+`PYTHONHASHSEED` must be fixed. The benchmark's input generators (for example `case_5`)
+draw with `random.choice(list(chars))` from a `set` of strings, whose order changes with
+Python's per-process string hashing, so the inputs of those programs and hence the
+effects of `case_5` differ from run to run. The number of programs with zero INT does not
+change, but the entry counts do.
 
 `slurm/tracr_interactions.sh` does the same on a CPU node, and
 `figures/tracr_counts.py` (main environment) turns the arrays into the counts the paper

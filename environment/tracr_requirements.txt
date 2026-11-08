@@ -1,13 +1,17 @@
 # Packages of the Tracr environment (see tracr.md). Versions are those of the environment
-# that produced the published counts. pygraphviz is installed from conda-forge, not here.
+# that produced the published counts, except torch: that environment ran torch 2.11.0 with a
+# local patch to the IIT fork, whose pinned commit annotates with `torch.Any`, an attribute
+# torch removed after 2.3.1 (the version IIT's own torchvision pin resolves to). The counts
+# do not depend on the torch version. pygraphviz is installed from conda-forge, not here.
 numpy==1.26.0
 scipy==1.14.0
 pandas==2.1.4
-torch==2.11.0
+torch==2.3.1
 transformer-lens==1.19.0
 transformers==4.39.3
 tokenizers==0.15.2
 datasets==2.18.0
+pyarrow==16.1.0
 huggingface-hub==0.24.5
 accelerate==0.31.0
 einops==0.7.0
@@ -27,5 +31,3 @@ cloudpickle==3.1.2
 typer==0.9.4
 tqdm==4.66.4
 tracr @ git+https://github.com/FlyingPumba/tracr.git@98f4910e3966805c83d80eb087c7a4e3328171c6
-iit @ git+https://github.com/cybershiptrooper/iit.git@947e2d24cec1860f5cdff7f85bf30d99eab08ba6
-acdc @ git+https://github.com/FlyingPumba/Automatic-Circuit-Discovery.git@78560d76a2b70010f0d55be27828b190adbb5b81

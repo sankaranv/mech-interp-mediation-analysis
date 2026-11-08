@@ -1,0 +1,5 @@
+# IIT and ACDC forks of the Tracr environment (see tracr.md), installed with --no-deps:
+# acdc requires the Tracr fork unpinned, which pip rejects next to the pinned Tracr of
+# tracr_requirements.txt, and neither fork's other requirements are imported by InterpBench's cases.
+iit @ git+https://github.com/cybershiptrooper/iit.git@947e2d24cec1860f5cdff7f85bf30d99eab08ba6
+acdc @ git+https://github.com/FlyingPumba/Automatic-Circuit-Discovery.git@78560d76a2b70010f0d55be27828b190adbb5b81
