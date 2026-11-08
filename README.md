@@ -126,6 +126,11 @@ pairs; in our reruns of the original code they differed from the stored arrays b
 The prompt pairs are in `data/`; their origin, license status and checksums are in
 [`data/SOURCES.md`](data/SOURCES.md).
 
+## License
+
+The code is released under the MIT License ([`LICENSE`](LICENSE)). The data files keep
+the terms of their sources, listed in [`data/SOURCES.md`](data/SOURCES.md).
+
 ## Citation
 
 ```bibtex
