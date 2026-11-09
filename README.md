@@ -63,10 +63,9 @@ slurm/run_all.sh                       # every experiment, then every figure and
 MODELS="gpt2-small" slurm/run_all.sh   # per-head effects of the named models only
 ```
 
-`slurm/run_all.sh` splits each experiment into jobs over ranges of prompt pairs, sized
-from the compute accounting of the paper's runs to take about 30 minutes each (898
-jobs, and one more for Tracr), and submits `slurm/<experiment>.sh` with the
-range in `PAIR_START` and `PAIR_STOP` (and `MODEL` and `TASK` for `head_effects.sh`).
+`slurm/run_all.sh` splits each experiment into jobs over ranges of prompt pairs and
+submits `slurm/<experiment>.sh` with the range in `PAIR_START` and `PAIR_STOP` (and
+`MODEL` and `TASK` for `head_effects.sh`).
 `MODELS` restricts only the per-head effects; the experiments on GPT-2 small are always
 submitted. A last job, `slurm/figures.sh`, runs `figures/make_all.sh` once every job
 has succeeded. If a job fails the figure job is cancelled: run `slurm/run_all.sh` again
@@ -79,16 +78,11 @@ The templates use the account and partitions of our cluster, `gpu-preempt` with
 lines for another cluster. Jobs are requeued after preemption and end with
 `slurm/check_pair_range.py`, which fails if the output is missing or not finite. The
 Tracr job is submitted only if `.venv-tracr` and `external/InterpBench` exist
-(`environment/tracr.md`). The per-head effects dominate the cost: at the per-pair times
-in `slurm/run_all.sh` the submission takes about 440 GPU-hours, 380 of them for GPT-2
-XL, Pythia-6.9B and Llama-3.1-8B. Jobs read the models from the Hugging Face cache
+(`environment/tracr.md`). Jobs read the models from the Hugging Face cache
 (`HF_HOME`, inherited from the submitting shell), so let it hold the models, or one
 job per model, before the hundreds of jobs start.
 
 ### Locally, for GPT-2 small
-
-The per-head effects of GPT-2 small on the five tasks take about 5 GPU-hours (3.5 seconds
-per pair) and the other experiments about 2.5 GPU-hours.
 
 ```bash
 for task in ioi_pabc ioi_symmetric sva gender_bias greater_than; do
