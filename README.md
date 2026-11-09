@@ -56,7 +56,7 @@ The prompt pairs are in `data/`; their sources and terms are in
 ## Citation
 
 ```bibtex
-@inproceedings{vaidyanathan2026cursemultiplemediatorshidden,
+@inproceedings{vaidyanathan2026curse,
   title         = {The Curse of Multiple Mediators: Hidden Interaction Effects in Activation Patching},
   author        = {Sankaran Vaidyanathan and David Arbour and Aaron Mueller and Scott Niekum and David Jensen},
   booktitle     = {The Fortieth Annual Conference on Neural Information Processing Systems},
