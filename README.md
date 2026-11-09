@@ -39,7 +39,9 @@ Every experiment on prompt pairs runs all pairs of its task, or a range with
 
 On SLURM, `slurm/run_all.sh` submits every experiment in ranges of pairs and then
 `figures/make_all.sh`; run it again after a failure and it submits only the missing ranges.
-Edit the `#SBATCH` lines for your cluster.
+The scripts request only resources; set your account and partition (for example with
+`SBATCH_ACCOUNT` and `SBATCH_PARTITION`), and a GPU with 40 GB for Pythia-6.9B and
+Llama-3.1-8B in `slurm/run_all.sh`.
 
 For GPT-2 small alone, run its experiments and then each figure script except
 `tracr_counts.py`; `rank_agreement.py` then draws only the GPT-2 small column.

@@ -5,8 +5,6 @@
 # environment/tracr.md (a CPU job):
 #   sbatch slurm/tracr_interactions.sh
 #SBATCH --job-name=tracr_interactions
-#SBATCH --account=pi_jensen_umass_edu
-#SBATCH --partition=cpu
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --time=00:20:00

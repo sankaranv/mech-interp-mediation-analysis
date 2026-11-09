@@ -5,9 +5,6 @@
 #   PAIR_START=0 PAIR_STOP=250 sbatch slurm/interpolation.sh
 # Eager attention; 74 forward passes per pair. float32 needs compute capability 7.0 or higher.
 #SBATCH --job-name=interpolation
-#SBATCH --account=pi_jensen_umass_edu
-#SBATCH --partition=gpu-preempt
-#SBATCH --constraint=sm_70
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G

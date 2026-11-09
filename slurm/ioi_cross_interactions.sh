@@ -5,9 +5,6 @@
 #   PAIR_START=0 PAIR_STOP=250 sbatch slurm/ioi_cross_interactions.sh
 # 363 forward passes per pair. float32 needs compute capability 7.0 or higher.
 #SBATCH --job-name=ioi_cross_interactions
-#SBATCH --account=pi_jensen_umass_edu
-#SBATCH --partition=gpu-preempt
-#SBATCH --constraint=sm_70
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G

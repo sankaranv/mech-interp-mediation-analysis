@@ -40,12 +40,12 @@ pair_count() {
 }
 
 # sbatch options that the template of head_effects.sh does not already carry. Pythia-6.9B
-# in float32 needs 27 GB of GPU memory; "bf16" keeps both large models off the RTX 8000
-# nodes. Loading the large models takes minutes, so they get a longer time limit.
+# in float32 needs 27 GB of GPU memory and Llama-3.1-8B runs in bfloat16, so both need a
+# GPU with 40 GB and bfloat16 support; add your cluster's option for selecting one here.
+# Loading the large models takes minutes, so they get a longer time limit.
 resource_options() {
     case "$1" in
-        pythia-6.9b | llama-3.1-8b)
-            echo "--partition=gpu-preempt-highvram --constraint=vram40&bf16 --mem=64G --time=01:30:00" ;;
+        pythia-6.9b | llama-3.1-8b) echo "--mem=64G --time=01:30:00" ;;
         gpt2-xl) echo "--time=01:30:00" ;;
     esac
 }

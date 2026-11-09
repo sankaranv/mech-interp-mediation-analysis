@@ -7,9 +7,6 @@
 # and then makes 74 forward passes per pair in its range. float32 needs compute capability
 # 7.0 or higher.
 #SBATCH --job-name=greater_than_cross_interactions
-#SBATCH --account=pi_jensen_umass_edu
-#SBATCH --partition=gpu-preempt
-#SBATCH --constraint=sm_70
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
