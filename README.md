@@ -129,10 +129,14 @@ the terms of their sources, listed in [`data/SOURCES.md`](data/SOURCES.md).
 ## Citation
 
 ```bibtex
-@inproceedings{vaidyanathan2026curse,
-  title     = {The Curse of Multiple Mediators: Hidden Interaction Effects in Activation Patching},
-  author    = {Vaidyanathan, Sankaran and Arbour, David and Mueller, Aaron and Niekum, Scott and Jensen, David},
-  booktitle = {Advances in Neural Information Processing Systems},
-  year      = {2026}
+@inproceedings{vaidyanathan2026cursemultiplemediatorshidden,
+  title         = {The Curse of Multiple Mediators: Hidden Interaction Effects in Activation Patching},
+  author        = {Sankaran Vaidyanathan and David Arbour and Aaron Mueller and Scott Niekum and David Jensen},
+  booktitle     = {The Fortieth Annual Conference on Neural Information Processing Systems},
+  year          = {2026},
+  url           = {https://openreview.net/forum?id=DA12jH1hET},
+  eprint        = {2606.27510},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
 }
 ```
