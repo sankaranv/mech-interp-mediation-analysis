@@ -104,7 +104,7 @@ python figures/rank_agreement.py      # Figure 1 with the GPT-2 small column onl
 
 `figures/rank_agreement.py` leaves cells without arrays empty, so with GPT-2 small alone it
 reproduces the GPT-2 small values (0.996, 0.919, 0.603, 0.513, 0.509) of Section 3. For a
-quick check, `--pairs 0:20` on every command runs in minutes.
+quick check, run every command with `--pairs 0:20`.
 
 ### Numerical reproducibility
 

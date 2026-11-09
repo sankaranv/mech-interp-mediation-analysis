@@ -3,7 +3,7 @@
 #
 # Submit from the repository root:
 #   PAIR_START=0 PAIR_STOP=250 sbatch slurm/interpolation.sh
-# Eager attention; 74 forward passes per pair (about 3 seconds per pair). float32 needs compute capability 7.0 or higher.
+# Eager attention; 74 forward passes per pair. float32 needs compute capability 7.0 or higher.
 #SBATCH --job-name=interpolation
 #SBATCH --account=pi_jensen_umass_edu
 #SBATCH --partition=gpu-preempt

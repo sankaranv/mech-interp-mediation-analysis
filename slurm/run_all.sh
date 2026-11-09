@@ -10,10 +10,7 @@
 # submission is left in the queue. The figure job then waits only for the jobs of this
 # submission; with every range already done it is the only job submitted.
 #
-# Range sizes target about 30 minutes per job. Seconds per prompt pair of the per-head
-# effects (GPU-hours of the paper's runs divided by their pairs): GPT-2 small 3.5,
-# Pythia-70M 0.9, GPT-2 medium 16, Qwen2.5-0.5B 24, Llama-3.1-8B 60, GPT-2 XL 120,
-# Pythia-6.9B 120.
+# Range sizes keep each job within its time limit.
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 mkdir -p outputs/logs
@@ -90,14 +87,14 @@ for model in $MODELS; do
 done
 
 # The experiments below all run on GPT-2 small.
-# Figure 2 (about 3 seconds per pair).
+# Figure 2.
 submit_ranges interpolation slurm/interpolation.sh "$(pair_count gpt2-small ioi_pabc)" 500
-# Section 4 (under a second per pair).
+# Section 4.
 submit_ranges circuit_knockout slurm/circuit_knockout.sh "$(pair_count gpt2-small ioi_pabc)" 1000
-# Section 5 and Appendix B cross-interactions (about 3 seconds per pair).
+# Section 5 and Appendix B cross-interactions.
 submit_ranges ioi_cross_interactions slurm/ioi_cross_interactions.sh \
     "$(pair_count gpt2-small ioi_pabc)" 500
-# Appendix C (about 2 seconds per pair). A job writes the mean ablation before the resample
+# Appendix C. A job writes the mean ablation before the resample
 # ablation, so the resample file shows that both are done.
 submit_ranges greater_than_cross_interactions/resample \
     slurm/greater_than_cross_interactions.sh "$(pair_count gpt2-small greater_than)" 500

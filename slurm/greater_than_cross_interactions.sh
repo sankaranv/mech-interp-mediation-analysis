@@ -4,8 +4,8 @@
 # Submit from the repository root:
 #   PAIR_START=0 PAIR_STOP=40 sbatch slurm/greater_than_cross_interactions.sh
 # Each job averages the MLP outputs over all 1000 counterfactual prompts for mean ablation
-# (about a minute) and then makes 74 forward passes per pair in its range. float32 needs
-# compute capability 7.0 or higher.
+# and then makes 74 forward passes per pair in its range. float32 needs compute capability
+# 7.0 or higher.
 #SBATCH --job-name=greater_than_cross_interactions
 #SBATCH --account=pi_jensen_umass_edu
 #SBATCH --partition=gpu-preempt

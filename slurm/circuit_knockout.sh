@@ -3,7 +3,7 @@
 #
 # Submit from the repository root:
 #   PAIR_START=0 PAIR_STOP=1000 sbatch slurm/circuit_knockout.sh
-# Eager attention; 5 forward passes per pair (a few minutes for all 1000 pairs). float32 needs compute capability 7.0 or higher.
+# Eager attention; 5 forward passes per pair. float32 needs compute capability 7.0 or higher.
 #SBATCH --job-name=circuit_knockout
 #SBATCH --account=pi_jensen_umass_edu
 #SBATCH --partition=gpu-preempt
