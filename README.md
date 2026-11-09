@@ -50,7 +50,7 @@ quotes from it.
 | Appendix C (Greater-Than MLP cross-interactions, mean and resample ablation) | `python experiments/greater_than_cross_interactions.py --pairs a:b` | `greater_than_cross_interactions/{mean,resample}/` | `python figures/greater_than_cross_interaction_table.py` | `greater_than_cross_interaction_table.tex`, `greater_than_cross_interaction_numbers.json` |
 
 All experiments except the per-head effects of other models and the Tracr programs use
-GPT-2 small. Without `--pairs`, `head_effects.py` runs every pair of the task; with it, a
+GPT-2 small. Without `--pairs`, an experiment runs every pair of its task; with it, a
 stop beyond the number of pairs is clipped. The number of pairs is 1000 per task, except
 Gender Bias (986; 782 under Pythia's tokenizer) and IOI with the pABC counterfactual under
 Pythia's tokenizer (691, the pairs whose clean and counterfactual prompts have equal
@@ -117,9 +117,10 @@ quick check, `--pairs 0:20` on every command runs in minutes.
 Results depend on the GPU: two runs on different GPUs differ at the rounding level of the
 model's precision. The per-head NIE and PIE of GPT-2 (float32) agree to about 1e-4,
 Pythia-70M (float32) to about 1e-2 because its float32 activations are intrinsically that
-imprecise, and Llama-3.1-8B (bfloat16) to a few tenths. Rank agreements average over 1000
-pairs; in our reruns of the original code they differed from the stored arrays by at most
-0.002.
+imprecise, and Llama-3.1-8B (bfloat16) to a few tenths. Rank agreements average over the
+prompt pairs: in a full rerun of this repository against the paper, every GPT-2 and Qwen2.5
+cell of Figure 1 and every number quoted in the paper reproduced at its printed precision,
+the Pythia cells agreed within 0.005, and the Llama-3.1-8B cells within 0.04.
 
 ## Data
 

@@ -68,6 +68,32 @@ def parse_pair_range(text: str) -> tuple[int, int]:
     return start, stop
 
 
+def add_pair_range_argument(parser) -> None:
+    """Add the ``--pairs start:stop`` option of every experiment; without it an experiment
+    covers every prompt pair of its task."""
+    parser.add_argument(
+        "--pairs",
+        type=parse_pair_range,
+        help="range of prompt pairs as start:stop (stop excluded), clipped to the number "
+        "of pairs of the task; default is every pair",
+    )
+
+
+def resolve_pair_range(
+    requested: tuple[int, int] | None, pair_count: int
+) -> tuple[int, int]:
+    """The pair range an experiment covers: every pair if none was requested, otherwise the
+    requested range clipped to ``pair_count``.
+
+    :raises ValueError: if the requested range starts at or after the last pair.
+    """
+    start, stop = requested or (0, pair_count)
+    stop = min(stop, pair_count)
+    if start >= stop:
+        raise ValueError(f"The task has {pair_count} prompt pairs")
+    return start, stop
+
+
 def save_pair_range(
     directory: Path, start: int, stop: int, **arrays: np.ndarray
 ) -> Path:

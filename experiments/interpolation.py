@@ -5,7 +5,7 @@ Writes, per pair range, ``clean_metric`` and ``counterfactual_metric`` (pairs,),
 ``activation_distance`` (pairs, heads); heads and weights are
 :data:`mediation.interpolation.INTERPOLATION_HEADS` and ``INTERPOLATION_WEIGHTS``.
 
-Run ``python experiments/interpolation.py --pairs 0:1000``.
+Run ``python experiments/interpolation.py``; ``--pairs start:stop`` restricts it to a range.
 """
 
 import argparse
@@ -15,7 +15,12 @@ import numpy as np
 
 from mediation.interpolation import interpolate_heads
 from mediation.models import load_model
-from mediation.results import OUTPUT_ROOT, parse_pair_range, save_pair_range
+from mediation.results import (
+    OUTPUT_ROOT,
+    add_pair_range_argument,
+    resolve_pair_range,
+    save_pair_range,
+)
 from mediation.tasks import load_prompt_pairs
 
 MODEL = "gpt2-small"
@@ -23,17 +28,18 @@ MODEL = "gpt2-small"
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--pairs", default="0:1000", help="start:stop, stop excluded")
+    add_pair_range_argument(parser)
     parser.add_argument(
         "--output-directory", type=Path, default=OUTPUT_ROOT / "interpolation"
     )
     arguments = parser.parse_args()
-    start, stop = parse_pair_range(arguments.pairs)
 
     # Eager attention, as in the published run; the other estimands use the default
     # implementation, which differs only at float32 rounding level.
     model = load_model(MODEL, attention_implementation="eager")
-    pairs = load_prompt_pairs("ioi_pabc", MODEL)[start:stop]
+    all_pairs = load_prompt_pairs("ioi_pabc", MODEL)
+    start, stop = resolve_pair_range(arguments.pairs, len(all_pairs))
+    pairs = all_pairs[start:stop]
     outcomes = [interpolate_heads(model, pair) for pair in pairs]
 
     save_pair_range(

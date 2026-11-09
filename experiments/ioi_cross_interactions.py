@@ -21,7 +21,7 @@ Writes, per pair range and grid ``g``: ``<g>_y_empty`` (pairs,), ``<g>_y_first``
 ``<g>_y_second`` (pairs, B) and ``<g>_y_both`` (pairs, A, B), the metrics of
 :class:`mediation.estimands.OutcomeGrid`.
 
-Run ``python experiments/ioi_cross_interactions.py --pairs 0:1000``.
+Run ``python experiments/ioi_cross_interactions.py``; ``--pairs start:stop`` restricts it to a range.
 """
 
 import argparse
@@ -40,7 +40,12 @@ from mediation.circuits import (
 from mediation.estimands import joint_outcome_grid
 from mediation.models import load_model
 from mediation.patching import AttentionHead, Component, cache_activations
-from mediation.results import OUTPUT_ROOT, parse_pair_range, save_pair_range
+from mediation.results import (
+    OUTPUT_ROOT,
+    add_pair_range_argument,
+    resolve_pair_range,
+    save_pair_range,
+)
 from mediation.tasks import load_prompt_pairs
 
 MODEL = "gpt2-small"
@@ -69,15 +74,16 @@ def grids() -> dict[str, tuple[list[Sequence[Component]], list[Sequence[Componen
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--pairs", default="0:1000", help="start:stop, stop excluded")
+    add_pair_range_argument(parser)
     parser.add_argument(
         "--output-directory", type=Path, default=OUTPUT_ROOT / "ioi_cross_interactions"
     )
     arguments = parser.parse_args()
-    start, stop = parse_pair_range(arguments.pairs)
 
     model = load_model(MODEL)
-    pairs = load_prompt_pairs("ioi_pabc", MODEL)[start:stop]
+    all_pairs = load_prompt_pairs("ioi_pabc", MODEL)
+    start, stop = resolve_pair_range(arguments.pairs, len(all_pairs))
+    pairs = all_pairs[start:stop]
     sets = grids()
 
     results: dict[str, dict[str, list]] = {

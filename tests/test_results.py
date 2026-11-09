@@ -1,7 +1,12 @@
 import numpy as np
 import pytest
 
-from mediation.results import load_pair_ranges, parse_pair_range, save_pair_range
+from mediation.results import (
+    load_pair_ranges,
+    parse_pair_range,
+    resolve_pair_range,
+    save_pair_range,
+)
 
 
 def test_ranges_are_concatenated_in_pair_order(tmp_path):
@@ -32,3 +37,10 @@ def test_parse_pair_range():
     assert parse_pair_range("0:250") == (0, 250)
     with pytest.raises(ValueError):
         parse_pair_range("5:5")
+
+
+def test_pair_range_defaults_to_every_pair_and_is_clipped():
+    assert resolve_pair_range(None, 691) == (0, 691)
+    assert resolve_pair_range((600, 750), 691) == (600, 691)
+    with pytest.raises(ValueError):
+        resolve_pair_range((700, 750), 691)

@@ -8,7 +8,7 @@ heads of Wang et al. and ``C'`` the other 118, the clean prompt is run with noth
 Writes, per pair range, ``clean_metric``, ``circuit_knocked_out_metric``,
 ``complement_knocked_out_metric`` and ``all_knocked_out_metric``, each of shape (pairs,).
 
-Run ``python experiments/circuit_knockout.py --pairs 0:1000``.
+Run ``python experiments/circuit_knockout.py``; ``--pairs start:stop`` restricts it to a range.
 """
 
 import argparse
@@ -20,7 +20,12 @@ from mediation.circuits import ioi_circuit_heads
 from mediation.estimands import joint_outcomes
 from mediation.models import load_model
 from mediation.patching import all_attention_heads, cache_activations
-from mediation.results import OUTPUT_ROOT, parse_pair_range, save_pair_range
+from mediation.results import (
+    OUTPUT_ROOT,
+    add_pair_range_argument,
+    resolve_pair_range,
+    save_pair_range,
+)
 from mediation.tasks import load_prompt_pairs
 
 MODEL = "gpt2-small"
@@ -28,16 +33,17 @@ MODEL = "gpt2-small"
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--pairs", default="0:1000", help="start:stop, stop excluded")
+    add_pair_range_argument(parser)
     parser.add_argument(
         "--output-directory", type=Path, default=OUTPUT_ROOT / "circuit_knockout"
     )
     arguments = parser.parse_args()
-    start, stop = parse_pair_range(arguments.pairs)
 
     # Eager attention, as in the published run.
     model = load_model(MODEL, attention_implementation="eager")
-    pairs = load_prompt_pairs("ioi_pabc", MODEL)[start:stop]
+    all_pairs = load_prompt_pairs("ioi_pabc", MODEL)
+    start, stop = resolve_pair_range(arguments.pairs, len(all_pairs))
+    pairs = all_pairs[start:stop]
 
     circuit = ioi_circuit_heads()
     complement = [head for head in all_attention_heads(model) if head not in circuit]

@@ -18,8 +18,9 @@ from mediation.estimands import head_effects
 from mediation.models import MODELS, load_model
 from mediation.results import (
     OUTPUT_ROOT,
+    add_pair_range_argument,
     head_effects_directory,
-    parse_pair_range,
+    resolve_pair_range,
     save_pair_range,
 )
 from mediation.tasks import TASKS, load_prompt_pairs
@@ -29,12 +30,7 @@ def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--model", required=True, choices=sorted(MODELS))
     parser.add_argument("--task", required=True, choices=TASKS)
-    parser.add_argument(
-        "--pairs",
-        type=parse_pair_range,
-        help="range of prompt pairs as start:stop (stop excluded), clipped to the number "
-        "of pairs the task has under the model's tokenizer; default is every pair",
-    )
+    add_pair_range_argument(parser)
     parser.add_argument("--output-directory", type=Path)
     return parser.parse_args()
 
@@ -42,12 +38,7 @@ def parse_arguments() -> argparse.Namespace:
 def main() -> None:
     arguments = parse_arguments()
     prompt_pairs = load_prompt_pairs(arguments.task, arguments.model)
-    start, stop = arguments.pairs or (0, len(prompt_pairs))
-    stop = min(stop, len(prompt_pairs))
-    if start >= stop:
-        raise ValueError(
-            f"{arguments.task} has {len(prompt_pairs)} pairs under {arguments.model}"
-        )
+    start, stop = resolve_pair_range(arguments.pairs, len(prompt_pairs))
 
     model = load_model(arguments.model)
     effects = [head_effects(model, pair) for pair in prompt_pairs[start:stop]]

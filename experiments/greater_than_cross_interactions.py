@@ -27,7 +27,12 @@ from mediation.estimands import patched_metric
 from mediation.models import load_model
 from mediation.patching import Activations, cache_activations, mean_activations
 from mediation.prompt_pair import PromptPair
-from mediation.results import OUTPUT_ROOT, parse_pair_range, save_pair_range
+from mediation.results import (
+    OUTPUT_ROOT,
+    add_pair_range_argument,
+    resolve_pair_range,
+    save_pair_range,
+)
 from mediation.tasks import load_prompt_pairs
 
 MODEL_NAME = "gpt2-small"
@@ -88,9 +93,7 @@ def compute_pair_range(
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    parser.add_argument(
-        "--pairs", default="0:1000", help="pair range start:stop, stop excluded"
-    )
+    add_pair_range_argument(parser)
     parser.add_argument(
         "--output-directory",
         type=Path,
@@ -99,8 +102,7 @@ def main() -> None:
     arguments = parser.parse_args()
 
     pairs = load_prompt_pairs("greater_than", MODEL_NAME)
-    start, stop = parse_pair_range(arguments.pairs)
-    stop = min(stop, len(pairs))
+    start, stop = resolve_pair_range(arguments.pairs, len(pairs))
 
     # The mean over counterfactual prompts always averages all pairs, whichever range this
     # job covers, and uses eager attention as the published run did. The ablated runs use
