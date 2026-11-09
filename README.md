@@ -134,7 +134,7 @@ the terms of their sources, listed in [`data/SOURCES.md`](data/SOURCES.md).
   author        = {Sankaran Vaidyanathan and David Arbour and Aaron Mueller and Scott Niekum and David Jensen},
   booktitle     = {The Fortieth Annual Conference on Neural Information Processing Systems},
   year          = {2026},
-  url           = {https://openreview.net/forum?id=DA12jH1hET},
+  url           = {https://arxiv.org/abs/2606.27510},
   eprint        = {2606.27510},
   archivePrefix = {arXiv},
   primaryClass  = {cs.LG}
